@@ -3,3 +3,5 @@ type: module
 description: Implements Google Tag Manager to exclude tags based on IP region.
 core: 8.x
 package: GDPR Tag Manager
+
+configure: gdpr_tag_manager.admin_settings

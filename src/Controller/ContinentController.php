@@ -22,8 +22,6 @@ class ContinentController extends ControllerBase {
    */
   public function getContinentCode() {
     $ip = \Drupal::request()->getClientIp();
-    //$ip = '73.111.47.90'; //us ip
-    //$ip = '185.208.164.108'; // EU IP
     $config = \Drupal::config('gdpr_tag_manager.settings');
     $ip_service = $config->get('ip_service');
 
@@ -39,7 +37,7 @@ class ContinentController extends ControllerBase {
   }
 
   /**
-   * Get continent code from external free service for eu c_code.
+   * Get continent code from either IPAPI or GEOIP
    */
   function ContinentController_get_country_code($ip, $ip_service) {
     try {
@@ -73,9 +71,9 @@ class ContinentController extends ControllerBase {
         return [];
       }
     } catch (\GuzzleHttp\Exception\ClientException $e) {
-      $message = $e->getMessage() . '. Make sure you provided correct IP to get country code .';
-      \Drupal::logger('gdpr_tag_manager_get_country_code')->notice($message);
-      return [];
+        $message = $e->getMessage() . '. Make sure you provided correct IP to get country code .';
+        \Drupal::logger('gdpr_tag_manager_get_country_code')->notice($message);
+        return [];
     }
   }
 }
