@@ -8,6 +8,25 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
+ * Implements hook_help().
+ */
+function gdpr_tag_manager_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.gdpr_tag_manager':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('') . '</p>';
+      $output .= '<h3>' . t('How it works') . '</h3>';
+      $output .= '<p>' . t('This module adds Google Tag Manager, checks
+        users continent code via an IP lookup service and sets the GTM dataLayer
+        variable with the continent code value.') . '</p>';
+      $output .= '<p>' . t('The module provides a settings page where the pop-up
+        can be configured at /admin/config/gdpr. ') . '</p>';
+      return ['#markup' => $output];
+  }
+}
+
+/**
  * Implements hook_page_attachments().
  */
 
