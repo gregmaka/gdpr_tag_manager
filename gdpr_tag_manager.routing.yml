@@ -1,5 +1,5 @@
 gdpr_tag_manager.admin_settings:
-  path: '/admin/config/gdpr'
+  path: '/admin/config/gdpr_tag_manager'
   defaults:
     _form: '\Drupal\gdpr_tag_manager\Form\SettingsForm'
     _title: 'GDPR Tag Manager settings'
