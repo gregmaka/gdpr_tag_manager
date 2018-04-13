@@ -1,0 +1,5 @@
+name: GDPR Tag Manager
+type: module
+description: Implements Google Tag Manager to exclude tags based on IP region.
+core: 8.x
+package: GDPR Tag Manager
