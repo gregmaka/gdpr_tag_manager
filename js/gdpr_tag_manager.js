@@ -19,12 +19,6 @@
 
       $.ajax({
         url: "/ajax/continent", success: function (result) {
-          console.log("This users region is : ",result['c_code']);
-          if ( result['c_code'] == 'NA') {
-            console.log('User is in North America, running scripts');
-          } else {
-            console.log('NOT RUNNING TRACKING SCRIPTS');
-          }
           if (result['c_code'] != 'NA' || show_popup_us == 0) {
             window.cookieconsent.initialise({
               palette: {
@@ -45,7 +39,7 @@
             });
           }
           if ((result['c_code'] == 'NA' || result['c_code'] == 'undefined') && needs_cookie === 1) {
-            Cookies.set('not_eu', 'true', { expires: parseInt(cookie_time) });
+            Cookies.set('isNA', 'true', { expires: parseInt(cookie_time) });
           }
           dataLayer = [{
             'gdpr': result['c_code']
