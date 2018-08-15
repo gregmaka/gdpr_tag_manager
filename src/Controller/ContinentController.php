@@ -24,12 +24,13 @@ class ContinentController extends ControllerBase {
     $ip = \Drupal::request()->getClientIp();
     $config = \Drupal::config('gdpr_tag_manager.settings');
     $ip_service = $config->get('ip_service');
-
-    if ($config->get('activate') == 1) {
+    $ipapi_key = $config->get('ipapi_key');
+    $is_bot = $this::smart_ip_detect_crawler($_SERVER['HTTP_USER_AGENT']);
+    if ($config->get('activate') == 1 && $is_bot == FALSE) {
       if (isset($_COOKIE['isNA'])) {
         $ip_data['c_code'] = 'NA';
       } else {
-        $ip_data['c_code'] = $this::ContinentController_get_country_code($ip, $ip_service);
+        $ip_data['c_code'] = $this::ContinentController_get_country_code($ip, $ip_service, $ipapi_key);
       }
       $ip_data['isanon'] = \Drupal::currentUser()->isAnonymous() ? TRUE : FALSE;
     }
@@ -39,11 +40,11 @@ class ContinentController extends ControllerBase {
   /**
    * Get continent code from either IPAPI or GEOIP
    */
-  function ContinentController_get_country_code($ip, $ip_service) {
+  function ContinentController_get_country_code($ip, $ip_service, $ipapi_key = NULL) {
     try {
       switch ($ip_service) {
       case 'IPAPI':
-        $uri = 'https://ipapi.co/' . $ip . '/json';
+        $uri = 'https://ipapi.co/' . $ip . '/json?key=' . $ipapi_key;
         break;
       case 'GEOIP':
         $uri = 'http://www.geoplugin.net/json.gp?ip=' . $ip;
@@ -66,8 +67,9 @@ class ContinentController extends ControllerBase {
             return ($response->continent_code);
           }
         }
-      }
-      else {
+      } else if ($request->getStatusCode() == 429) {
+
+      } else {
         return [];
       }
     } catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -75,5 +77,27 @@ class ContinentController extends ControllerBase {
         \Drupal::logger('gdpr_tag_manager_get_country_code')->notice($message);
         return [];
     }
+  }
+
+  function smart_ip_detect_crawler($user_agent) {
+    // User lowercase string for comparison.
+    $user_agent = strtolower($user_agent);
+    // A list of some common words used only for bots and crawlers.
+    $bot_identifiers = [
+      'bot',
+      'slurp',
+      'crawler',
+      'spider',
+      'curl',
+      'facebook',
+      'fetch',
+    ];
+    // See if one of the identifiers is in the UA string.
+    foreach ($bot_identifiers as $identifier) {
+      if (strpos($user_agent, $identifier) !== FALSE) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 }

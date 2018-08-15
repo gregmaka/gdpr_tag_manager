@@ -39,11 +39,22 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('activate'),
       '#description' => $this->t('You can toggle if EU lookup will run here.'),
     ];
-    $form['gtm_container'] = [
+    $form['gtm_info_info'] = [
+      '#type' => 'details',
+      '#title' => $this->t('GTM Settings.'),
+      '#open' => FALSE,
+    ];
+    $form['gtm_info_info']['gtm_container'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Google tag manager container ID'),
       '#default_value' => $config->get('gtm_container'),
       '#description' => $this->t('Enter the google tag manager container ID.'),
+    ];
+    $form['gtm_info_info']['gtm_dl_event'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Sets a dataLayer event value on pageload.'),
+      '#default_value' => $config->get('gtm_dl_event'),
+      '#description' => $this->t('Enter the name of the dataLayer event you want to set.'),
     ];
     $form['ip_service'] = [
       '#type' => 'radios',
@@ -55,6 +66,12 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('ip_service'),
       '#description' => $this->t('Select which IP lookup service to use.'),
       '#required' => TRUE,
+    ];
+    $form['ipapi_key'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('IPAPI API Key'),
+      '#default_value' => $config->get('ipapi_key'),
+      '#description' => $this->t('Enter your IPAPI Key.'),
     ];
     $form['cookie_info'] = [
       '#type' => 'details',
@@ -149,7 +166,9 @@ class SettingsForm extends ConfigFormBase {
     $config->set('link_text', $form_state->getValue('link_text'));
     $config->set('privacy_policy_link', $form_state->getValue('privacy_policy_link'));
     $config->set('gtm_container', $form_state->getValue('gtm_container'));
+    $config->set('gtm_dl_event', $form_state->getValue('gtm_dl_event'));
     $config->set('ip_service', $form_state->getValue('ip_service'));
+    $config->set('ipapi_key', $form_state->getValue('ipapi_key'));
     $config->set('cookie_duration', $form_state->getValue('cookie_duration'));
     $config->set('cookie_activate', $form_state->getValue('cookie_activate'));
     $config->set('show_popup_us', $form_state->getValue('show_popup_us'));
