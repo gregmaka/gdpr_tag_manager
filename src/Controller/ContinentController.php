@@ -21,13 +21,13 @@ class ContinentController extends ControllerBase {
     $config = \Drupal::config('gdpr_tag_manager.settings');
     $ip_service = $config->get('ip_service');
     $ipapi_key = $config->get('ipapi_key');
-    $is_bot = $this::smartIpDetectCrawler($_SERVER['HTTP_USER_AGENT']);
-    if ($config->get('activate') == 1) {
-      if (isset($_COOKIE['isNA']) && $is_bot == FALSE) {
+    $is_bot = $this->smartIpDetectCrawler($_SERVER['HTTP_USER_AGENT']);
+    if ($config->get('activate') === 1) {
+      if (isset($_COOKIE['isNA']) && $is_bot === FALSE) {
         $ip_data['c_code'] = 'NA';
       }
       else {
-        $ip_data['c_code'] = $this::continentControllerGetCountryCode($ip, $ip_service, $ipapi_key);
+        $ip_data['c_code'] = $this->continentControllerGetCountryCode($ip, $ip_service, $ipapi_key);
       }
       $ip_data['isanon'] = \Drupal::currentUser()->isAnonymous() ? TRUE : FALSE;
     }
@@ -53,21 +53,21 @@ class ContinentController extends ControllerBase {
         'timeout' => 5,
         'headers' => ['Accept' => 'application/json'],
       ]);
-      if ($request->getStatusCode() == 200) {
+      if ($request->getStatusCode() === 200) {
         $response = json_decode($request->getBody());
         if (empty($response)) {
           return [];
         }
         else {
-          if ($ip_service == 'GEOIP') {
-            return ($response->geoplugin_continentCode);
+          if ($ip_service === 'GEOIP') {
+            return $response->geoplugin_continentCode;
           }
-          elseif ($ip_service == 'IPAPI') {
-            return ($response->continent_code);
+          if ($ip_service === 'IPAPI') {
+            return $response->continent_code;
           }
         }
       }
-      elseif ($request->getStatusCode() == 429) {
+      elseif ($request->getStatusCode() === 429) {
         // IPAPI account has run out of requests for this time interval.
         return NULL;
       }

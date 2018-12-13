@@ -32,7 +32,7 @@ function gdpr_tag_manager_help($route_name, RouteMatchInterface $route_match) {
 function gdpr_tag_manager_page_attachments_alter(&$page) {
   $config = \Drupal::config('gdpr_tag_manager.settings');
 
-  if ($config->get('activate') == 1 && !\Drupal::service('router.admin_context')->isAdminRoute()) {
+  if ($config->get('activate') === 1 && !\Drupal::service('router.admin_context')->isAdminRoute()) {
     $page['#attached']['library'][] = 'gdpr_tag_manager/gdpr_tag_manager_lib';
     $page['#attached']['drupalSettings']['pop_up_msg'] = $config->get('pop_up_msg');
     $page['#attached']['drupalSettings']['pop_up_scroll'] = $config->get('pop_up_scroll');
