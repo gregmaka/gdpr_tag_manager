@@ -1,14 +1,10 @@
 <?php
-/**
- * @file
- * Contains \Drupal\gdpr_tag_manager\Controller\ContinentController.
- */
 
 namespace Drupal\gdpr_tag_manager\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 
 /**
  * Class ContinentController.
@@ -25,12 +21,13 @@ class ContinentController extends ControllerBase {
     $config = \Drupal::config('gdpr_tag_manager.settings');
     $ip_service = $config->get('ip_service');
     $ipapi_key = $config->get('ipapi_key');
-    $is_bot = $this::smart_ip_detect_crawler($_SERVER['HTTP_USER_AGENT']);
-    if ($config->get('activate') == 1 && $is_bot == FALSE) {
-      if (isset($_COOKIE['isNA'])) {
+    $is_bot = $this::smartIpDetectCrawler($_SERVER['HTTP_USER_AGENT']);
+    if ($config->get('activate') == 1) {
+      if (isset($_COOKIE['isNA']) && $is_bot == FALSE) {
         $ip_data['c_code'] = 'NA';
-      } else {
-        $ip_data['c_code'] = $this::ContinentController_get_country_code($ip, $ip_service, $ipapi_key);
+      }
+      else {
+        $ip_data['c_code'] = $this::continentControllerGetCountryCode($ip, $ip_service, $ipapi_key);
       }
       $ip_data['isanon'] = \Drupal::currentUser()->isAnonymous() ? TRUE : FALSE;
     }
@@ -38,17 +35,18 @@ class ContinentController extends ControllerBase {
   }
 
   /**
-   * Get continent code from either IPAPI or GEOIP
+   * Get continent code from either IPAPI or GEOIP.
    */
-  function ContinentController_get_country_code($ip, $ip_service, $ipapi_key = NULL) {
+  private function continentControllerGetCountryCode($ip, $ip_service, $ipapi_key) {
     try {
       switch ($ip_service) {
-      case 'IPAPI':
-        $uri = 'https://ipapi.co/' . $ip . '/json?key=' . $ipapi_key;
-        break;
-      case 'GEOIP':
-        $uri = 'http://www.geoplugin.net/json.gp?ip=' . $ip;
-        break;
+        case 'IPAPI':
+          $uri = 'https://ipapi.co/' . $ip . '/json?key=' . $ipapi_key;
+          break;
+
+        case 'GEOIP':
+          $uri = 'http://www.geoplugin.net/json.gp?ip=' . $ip;
+          break;
       }
       $client = \Drupal::httpClient(['base_url' => $uri]);
       $request = $client->request('GET', $uri, [
@@ -63,23 +61,31 @@ class ContinentController extends ControllerBase {
         else {
           if ($ip_service == 'GEOIP') {
             return ($response->geoplugin_continentCode);
-          } elseif ($ip_service == 'IPAPI') {
+          }
+          elseif ($ip_service == 'IPAPI') {
             return ($response->continent_code);
           }
         }
-      } else if ($request->getStatusCode() == 429) {
-
-      } else {
+      }
+      elseif ($request->getStatusCode() == 429) {
+        // IPAPI account has run out of requests for this time interval.
+        return NULL;
+      }
+      else {
         return [];
       }
-    } catch (\GuzzleHttp\Exception\ClientException $e) {
-        $message = $e->getMessage() . '. Make sure you provided correct IP to get country code .';
-        \Drupal::logger('gdpr_tag_manager_get_country_code')->notice($message);
-        return [];
+    }
+    catch (ClientException $e) {
+      $message = $e->getMessage() . '. Make sure you provided correct IP to get country code .';
+      \Drupal::logger('gdpr_tag_manager_get_country_code')->notice($message);
+      return [];
     }
   }
 
-  function smart_ip_detect_crawler($user_agent) {
+  /**
+   * Detect webcrawlers based on user_agent string.
+   */
+  private function smartIpDetectCrawler($user_agent) {
     // User lowercase string for comparison.
     $user_agent = strtolower($user_agent);
     // A list of some common words used only for bots and crawlers.
@@ -100,4 +106,5 @@ class ContinentController extends ControllerBase {
     }
     return FALSE;
   }
+
 }
